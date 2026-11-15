@@ -306,6 +306,13 @@ elemento('vigilar-cercania').addEventListener('click', function () {
   this.textContent = 'Detener alertas por cercanía';
   informar('Seguimiento activado solo mientras la página esté abierta. No se guardan coordenadas.');
 });
+elemento('simular-cercania').addEventListener('click', function () {
+  const prueba = reportesFiltrados()[0];
+  if (!prueba) { informar('No hay reportes visibles para simular un aviso.'); return; }
+  ultimoAvisoCercania = '';
+  alertasCercanas(Number(prueba.lat), Number(prueba.lon));
+  informar('Prueba de cercanía con ubicación FICTICIA. No corresponde a la ubicación de tu dispositivo.');
+});
 function alertasCercanas(lat, lon) {
   if (!permiteAvisar()) { informar('Alertas en silencio o fuera del horario configurado.'); return; }
   const cerca = reportes.filter(function (r) {
@@ -340,11 +347,11 @@ function verDetalle(id) {
 elemento('confirmar-reporte').addEventListener('click', function () {
   const r = obtenerReporte(idDetalle);
   if (!r || r.estado !== 'pendiente' || r.propietario === perfil.usuario) return;
-  r.confirmaciones = Number(r.confirmaciones || 0) + 1;
   // Simulación de una única validación comunitaria. La verificación oficial pertenece a seguridad.
   const key = 'safecampus-confirmo-' + r.id + '-' + perfil.usuario;
   if (sessionStorage.getItem(key)) { informar('Ya confirmaste este reporte en esta sesión.'); return; }
   sessionStorage.setItem(key, 'si');
+  r.confirmaciones = Number(r.confirmaciones || 0) + 1;
   persistirReportes();
   verDetalle(r.id);
   informar('Confirmación comunitaria simulada registrada; no sustituye la verificación de seguridad.');
