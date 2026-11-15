@@ -10,14 +10,10 @@ const CLAVE_PERFIL = 'safecampus-demo-perfil-v1';
 const CLAVE_COMUNICADOS = 'safecampus-demo-comunicados-v1';
 const CLAVE_AVISOS = 'safecampus-demo-avisos-v1';
 const CLAVE_BITACORA = 'safecampus-demo-bitacora-v1';
-const CENTRO_LIMA = [-12.0464, -77.0428];
-const ahora = Date.now();
-
-const reportesIniciales = [
-  { id: 'D-021', categoria: 'Robo', descripcion: 'EJEMPLO FICTICIO: reporte de prueba para explorar la interfaz.', lugar: 'Centro de Lima (simulado)', lat: -12.0475, lon: -77.0403, nivel: 'alto', fecha: ahora - 35 * 60000, estado: 'pendiente', propietario: 'demo@universidad.edu', confirmaciones: 0, gestion: 'Pendiente', responsable: '', evidencia: '' },
-  { id: 'D-022', categoria: 'Iluminación', descripcion: 'EJEMPLO FICTICIO: iluminación insuficiente descrita con fines académicos.', lugar: 'Cercado de Lima (simulado)', lat: -12.0524, lon: -77.0346, nivel: 'medio', fecha: ahora - 3 * 3600000, estado: 'confirmado', propietario: 'otra-cuenta@universidad.edu', confirmaciones: 2, gestion: 'En atención', responsable: 'Equipo A', evidencia: '' },
-  { id: 'D-023', categoria: 'Acoso', descripcion: 'EJEMPLO FICTICIO: ubicación y descripción no corresponden a un suceso real.', lugar: 'Pueblo Libre (simulado)', lat: -12.0762, lon: -77.0622, nivel: 'bajo', fecha: ahora - 2 * 86400000, estado: 'pendiente', propietario: 'otra-cuenta@universidad.edu', confirmaciones: 0, gestion: 'Pendiente', responsable: '', evidencia: '' }
-];
+// PASO 1. Ambas páginas leen los mismos reportes de demostración.
+const datosCompartidos = window.SafeCampusDatos;
+const CENTRO_LIMA = datosCompartidos ? datosCompartidos.centro : [-12.0464, -77.0428];
+const reportesIniciales = datosCompartidos ? datosCompartidos.iniciales() : [];
 
 const perfilInicial = {
   usuario: 'demo@universidad.edu',
@@ -629,3 +625,16 @@ window.addEventListener('storage', function (evento) {
 });
 cargarPerfil();
 refrescarTodo();
+
+// PASO 12. Permitir que la vista previa abra el detalle real de un reporte.
+const reporteDeEnlace = new URLSearchParams(window.location.search).get('reporte');
+if (reporteDeEnlace && obtenerReporte(reporteDeEnlace)) {
+  verDetalle(reporteDeEnlace);
+} else if (window.location.hash === '#vista-reportes') {
+  navegar('vista-reportes');
+} else if (window.location.hash === '#vista-comunidad') {
+  navegar('vista-comunidad');
+} else if (window.location.hash === '#vista-perfil') {
+  navegar('vista-perfil');
+}
+
