@@ -1,85 +1,108 @@
-// PASO 1. Inicializar un mapa geográfico auténtico con Leaflet y OpenStreetMap.
-// Se usa un mapa de referencia de Lima: NO se presentan incidentes reales.
+/*
+  SafeCampus | Aegis Labs
+  Mapa de vista previa del Landing Page.
+  Utiliza los mismos reportes ficticios que plataforma.html.
+  No recopila ni representa incidentes de seguridad reales.
+*/
 const contenedorMapa = document.querySelector('#mapa-real');
 const estadoMapa = document.querySelector('#estado-mapa');
 const botonLima = document.querySelector('#mapa-lima');
 const botonUbicacion = document.querySelector('#mapa-ubicacion');
 const vistaMapa = document.querySelector('.mapa-ilustrativo');
-const coordenadasLima = [-12.0464, -77.0428]; // Latitud y longitud del centro de Lima.
+const fuente = window.SafeCampusDatos;
+const coordenadasLima = fuente ? fuente.centro : [-12.0464, -77.0428];
 
-// PASO 2. El dibujo de Figma funciona como respaldo si no hay Internet.
 if (typeof L === 'undefined') {
-  estadoMapa.textContent = 'No se pudo cargar Leaflet. Se muestra el mapa ilustrativo. Verifica tu conexión a Internet.';
+  estadoMapa.textContent = 'Vista ilustrativa: el mapa real no se pudo cargar. Para consultar los reportes de demostración, entra a la plataforma.';
 } else {
   contenedorMapa.hidden = false;
-  const mapa = L.map('mapa-real', { scrollWheelZoom: false }).setView(coordenadasLima, 12);
-
-  // PASO 3. Descargar únicamente las imágenes del área visible del mapa.
-  // © OpenStreetMap contributors; su atribución debe permanecer visible.
+  const mapa = L.map('mapa-real', {scrollWheelZoom: false}).setView(coordenadasLima, 12);
   const calles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
   }).addTo(mapa);
-
+  const capaReportes = L.layerGroup().addTo(mapa);
   let hayMapaReal = false;
-  let marcadorSeleccionado = null;
   let marcadorUbicacion = null;
+
+  function escapar(texto) {
+    return String(texto ?? '').replace(/[&<>"']/g, function (c) {
+      return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c];
+    });
+  }
+
+  function dibujarReportes() {
+    capaReportes.clearLayers();
+    const reportes = fuente ? fuente.leer() : [];
+    const validos = reportes.filter(function (r) {
+      return r && r.estado !== 'descartado' &&
+        Number.isFinite(Number(r.lat)) && Number.isFinite(Number(r.lon)) &&
+        Math.abs(Number(r.lat)) <= 90 && Math.abs(Number(r.lon)) <= 180;
+    });
+    validos.forEach(function (r) {
+      const nivel = ['alto', 'medio', 'bajo'].includes(r.nivel) ? r.nivel : 'medio';
+      const color = {alto:'#874b4b', medio:'#b36b6b', bajo:'#d6a5a5'}[nivel];
+      const marcador = L.circleMarker([Number(r.lat), Number(r.lon)], {
+        radius: 8, color: '#fff', fillColor: color, fillOpacity: 1, weight: 2
+      }).addTo(capaReportes);
+      const enlace = 'plataforma.html?reporte=' + encodeURIComponent(String(r.id));
+      marcador.bindPopup(
+        '<strong>' + escapar(r.categoria) + ' · reporte ficticio</strong>' +
+        '<br>Nivel ' + escapar(nivel) +
+        '<br>Estado: ' + escapar(r.estado) +
+        '<br><a href="' + enlace + '">Ver detalle en SafeCampus</a>'
+      );
+    });
+    if (hayMapaReal) {
+      estadoMapa.textContent = 'Vista previa de ' + validos.length +
+        ' reportes ficticios de SafeCampus. Selecciona un marcador para ver su detalle en la plataforma.';
+    }
+  }
 
   calles.once('tileload', function () {
     hayMapaReal = true;
     vistaMapa.classList.add('mapa-interactivo-activo');
     botonLima.disabled = false;
     botonUbicacion.disabled = false;
-    estadoMapa.textContent = 'Calles reales de Lima, Perú. Arrastra, utiliza +/− o selecciona un punto. No hay reportes de riesgo reales.';
+    dibujarReportes();
     mapa.invalidateSize();
   });
 
-  // PASO 4. Si falla el servicio, conservar el mapa ilustrativo como respaldo.
   window.setTimeout(function () {
     if (!hayMapaReal) {
       contenedorMapa.hidden = true;
-      estadoMapa.textContent = 'No fue posible cargar las calles reales. Se muestra el dibujo ilustrativo. Comprueba Internet y abre el sitio con un servidor local.';
+      estadoMapa.textContent = 'No se pudieron cargar las calles reales. Se muestra la ilustración de Figma como respaldo.';
     }
   }, 12000);
 
-  // PASO 5. Al tocar el mapa, mostrar las coordenadas geográficas elegidas.
-  mapa.on('click', function (evento) {
-    const latitud = evento.latlng.lat.toFixed(5);
-    const longitud = evento.latlng.lng.toFixed(5);
-    if (marcadorSeleccionado) mapa.removeLayer(marcadorSeleccionado);
-    marcadorSeleccionado = L.circleMarker(evento.latlng, {
-      radius: 8, color: '#173b55', fillColor: '#3e7091', fillOpacity: 0.9, weight: 2
-    }).addTo(mapa);
-    marcadorSeleccionado.bindPopup(
-      '<strong>Punto seleccionado</strong><br>Latitud: ' + latitud +
-      '<br>Longitud: ' + longitud + '<br>No existe un reporte verificado para este punto.'
-    ).openPopup();
-  });
-
-  // PASO 6. Regresar a la vista de referencia de Lima.
   botonLima.addEventListener('click', function () {
     mapa.setView(coordenadasLima, 12);
   });
 
-  // PASO 7. Solicitar ubicación solo cuando la persona pulsa el botón.
-  // No se guardan ni envían coordenadas de ubicación a una base de datos.
   botonUbicacion.addEventListener('click', function () {
     if (!navigator.geolocation) {
       estadoMapa.textContent = 'Este navegador no permite consultar tu ubicación.';
       return;
     }
-    estadoMapa.textContent = 'Solicitando permiso para mostrar tu ubicación...';
+    estadoMapa.textContent = 'Solicitando permiso para mostrar tu ubicación aproximada...';
     navigator.geolocation.getCurrentPosition(function (posicion) {
-      const ubicacion = [posicion.coords.latitude, posicion.coords.longitude];
+      const posicionMapa = [posicion.coords.latitude, posicion.coords.longitude];
       if (marcadorUbicacion) mapa.removeLayer(marcadorUbicacion);
-      marcadorUbicacion = L.circleMarker(ubicacion, {
+      marcadorUbicacion = L.circleMarker(posicionMapa, {
         radius: 9, color: '#ffffff', fillColor: '#3e7091', fillOpacity: 1, weight: 3
       }).addTo(mapa);
-      marcadorUbicacion.bindPopup('Tu ubicación aproximada (no es un reporte de riesgo).').openPopup();
-      mapa.setView(ubicacion, 15);
-      estadoMapa.textContent = 'Ubicación aproximada mostrada. La precisión depende del dispositivo.';
+      marcadorUbicacion.bindPopup('Tu ubicación aproximada (no representa un reporte).').openPopup();
+      mapa.setView(posicionMapa, 15);
+      estadoMapa.textContent = 'Ubicación aproximada mostrada. No representa un riesgo verificado.';
     }, function () {
-      estadoMapa.textContent = 'No se pudo acceder a tu ubicación. Puedes explorar el mapa manualmente.';
-    }, { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 });
+      estadoMapa.textContent = 'No se pudo obtener tu ubicación. Puedes explorar el mapa sin compartirla.';
+    }, {enableHighAccuracy:false, timeout:10000, maximumAge:60000});
+  });
+
+  window.addEventListener('storage', function (evento) {
+    if (fuente && evento.key === fuente.clave) dibujarReportes();
+  });
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) dibujarReportes();
   });
 }
