@@ -32,7 +32,7 @@ async function run(viewport){
    await page.locator('#report-review').waitFor({state:'visible'});
    await page.locator('#save-report').click();
    await page.locator('#view-reports').waitFor({state:'visible'});
-   await page.getByText('INCIDENTE FICTICIO generado por prueba de navegador').first().waitFor();
+   await page.locator('#my-reports').getByText('INCIDENTE FICTICIO generado por prueba de navegador').first().waitFor();
    await page.locator('#demo-role').selectOption('seguridad');
    await page.locator('#nav-security').waitFor({state:'visible'});
    await page.locator('#nav-security').click();
