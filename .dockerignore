@@ -1,0 +1,12 @@
+.datos
+node_modules
+.git
+.env
+.env.*
+__*snapshot.html
+__*transfer*.html
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*-source.txt
+browser-movil-test.png
