@@ -5,10 +5,22 @@
 **Base:** Product Backlog del informe AV1 actualizado en Drive el 13/11/2026 y mock-ups exportados de Figma almacenados en la carpeta TRABAJO.  
 **Rama de trabajo:** feature/hu-workflows-demo (parte de develop).
 
+## Integración Landing Page → Plataforma (15/11/2026)
+
+- **`index.html`** sigue siendo la presentación pública y mantiene su diseño responsive del mock-up de Landing Page.
+- Botones «Ingresar a SafeCampus» y «Explorar la plataforma SafeCampus» abren **`plataforma.html`**.
+- El menú contiene el acceso «Plataforma»; la aplicación dispone de enlaces «Inicio», «Cómo funciona» y «Volver al Landing Page».
+- El mapa de inicio es una **vista previa**: toma los reportes simulados de la misma fuente `js/datos-compartidos.js` y el mismo almacenamiento local `safecampus-demo-reportes-v1`. Al abrir el marcador, enlaza a `plataforma.html?reporte=IDENTIFICADOR`, donde se muestra el detalle.
+- La versión móvil utiliza la navegación inferior fija de acuerdo con los mock-ups móviles; en escritorio permanece una barra de navegación cerca del contenido.
+- **No hay sincronización remota**. Para conservar datos entre ambas páginas hay que abrirlas bajo el mismo origen de Live Server. El mapa de presentación necesita conexión a las capas de OpenStreetMap y recurre a la ilustración cuando no cargan.
+- Referencias revisadas: `Desktop Landing Page Mock-up.png`, `Mobile Landing Page Mock-up.png` y `Android — Core Mobile Mock-ups.png` (exportados desde Figma al Drive del curso). No se verificó directamente un archivo Figma editable.
+
+**Verificación técnica estática:** JavaScript de los tres scripts nuevos/modificados válido; 64 referencias DOM presentes en `plataforma.html`; sin `id` duplicados. **Pendiente:** pruebas de interacción reales en el navegador y contraste visual final en 390 × 844.
+
 ## Acceso
 
 - El Landing Page original permanece en \`index.html\`.
-- Desde el menú **Probar funciones** o el botón al final de Beneficios se abre \`plataforma.html\`.
+- Desde el menú **Plataforma**, los botones de ingreso o el acceso debajo de Beneficios se abre \`plataforma.html\`.
 - La demostración contiene pantallas adaptadas a los mock-ups de Android/iOS: mapa, detalle de incidente, nuevo reporte, mis reportes, comunidad, perfil, alertas y panel operativo de seguridad.
 - El archivo \`css/plataforma.css\` establece la presentación responsive y \`js/plataforma.js\` las interacciones.
 
