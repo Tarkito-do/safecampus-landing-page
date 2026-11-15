@@ -185,3 +185,65 @@ input[type="file"] { max-width: 100%; padding: .7rem 0; font-size: .85rem; }
   .encabezado-vista .boton { width: 100%; }
   .acciones-cortas button { flex-grow: 1; }
 }
+
+/* PASO 6. Identidad visual compartida con el Landing Page. */
+.app-cabecera { position: relative; z-index: 1000; }
+.cabecera-interior { min-height: 80px; }
+.marca-app { gap: .7rem; font-size: 1.5rem; font-weight: 800; letter-spacing: -.035em; }
+.marca-app img { width: 54px; height: 48px; object-fit: contain; }
+.enlaces-cabecera { display: flex; align-items: center; gap: 1.2rem; }
+.enlaces-cabecera a, .contexto-app a, .pie-app a {
+  color: var(--azul-acero);
+  text-decoration: none;
+  font-weight: 700;
+}
+.enlaces-cabecera a:hover, .contexto-app a:hover, .pie-app a:hover { text-decoration: underline; }
+.contexto-app {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-top: 1.2rem;
+  font-size: .85rem;
+}
+.contexto-app span { color: var(--texto-secundario); }
+.rol-control select { min-width: 175px; }
+.pie-app { background: #f7f9fb; border-top: 1px solid var(--borde); }
+.pie-app-interior {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  min-height: 80px;
+  padding: 1.2rem 0;
+  font-size: .8rem;
+}
+.pie-app-interior span { color: var(--texto-secundario); }
+.mensaje-global:empty { min-height: 0; margin: 0; }
+@media (max-width: 780px) {
+  .enlaces-cabecera { display: none; }
+  .rol-control { margin-left: auto; }
+}
+@media (max-width: 600px) {
+  body { padding-bottom: 68px; }
+  .cabecera-interior { min-height: 68px; }
+  .marca-app { font-size: 1.25rem; }
+  .marca-app img { width: 47px; height: 42px; }
+  .rol-control { width: 100%; margin: 0 0 .5rem; }
+  .rol-control select { min-width: 0; }
+  .contexto-app { font-size: .8rem; }
+  .navegacion-inferior {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    margin: 0;
+    border-radius: 12px 12px 0 0;
+    padding: .55rem max(.35rem, env(safe-area-inset-right)) calc(.55rem + env(safe-area-inset-bottom)) max(.35rem, env(safe-area-inset-left));
+  }
+  .pie-app-interior { display: grid; gap: .5rem; }
+  .aviso-demo { font-size: .8rem; }
+}
