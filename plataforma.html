@@ -68,7 +68,7 @@
         <label>Distrito o referencia <input id="reporte-lugar" maxlength="80" placeholder="Ej. Centro de Lima" required></label>
         <div class="dos-columnas"><label>Latitud <input type="number" id="reporte-lat" min="-90" max="90" step="any" required></label><label>Longitud <input type="number" id="reporte-lon" min="-180" max="180" step="any" required></label></div>
         <div class="acciones-cortas"><button type="button" id="ubicacion-formulario" class="boton-secundario">Usar GPS</button><button type="button" id="elegir-en-mapa" class="boton-secundario">Elegir en mapa</button></div>
-        <label>Adjuntar evidencia (opcional; máximo 800 KB) <input type="file" id="reporte-foto" accept="image/*"></label>
+        <label>Adjuntar evidencia (opcional; máximo 200 KB) <input type="file" id="reporte-foto" accept="image/*"></label>
         <div id="vista-foto"></div>
         <button type="submit" class="boton ancho">Revisar reporte</button>
       </form>
@@ -86,7 +86,7 @@
       <p class="sobre-titulo">COMUNIDAD UNIVERSITARIA</p><h1 id="titulo-comunidad">Reportes y avisos</h1>
       <h2>Incidentes de demostración</h2><div id="lista-comunidad" class="lista"></div>
       <h2>Comunicados</h2><div id="lista-comunicados" class="lista"></div>
-      <h2>Notificaciones de esta sesión</h2><div id="lista-notificaciones" class="lista"></div>
+      <h2>Historial de avisos locales</h2><div id="lista-notificaciones" class="lista"></div>
       <button type="button" id="habilitar-avisos" class="boton-secundario">Permitir notificaciones del navegador</button>
       <p class="nota">No hay notificaciones push de fondo ni envíos a otros dispositivos. Solo avisos locales o del navegador mientras la página está abierta.</p>
     </section>
