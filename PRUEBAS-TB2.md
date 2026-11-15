@@ -39,14 +39,14 @@ Fuente: informe Aegis Labs en la carpeta **TRABAJO** del curso; 30 historias agr
 
 ## Verificaciones transversales
 
-- [ ] **Escritorio:** 1366 × 768 o superior, sin desbordamientos; cabecera, mapa y tarjetas.
-- [ ] **Móvil:** 390 × 844 y 320 px de ancho, sin desplazamiento horizontal; formularios y navegación accesibles.
-- [ ] **Teclado:** tabulación, foco visible, etiquetas de campos, botones activables con Enter/Espacio.
-- [ ] **Estados vacíos y errores:** ausencia de coincidencias, falta de GPS, archivo grande, campo obligatorio.
-- [ ] **Accesibilidad a11y:** lectura de mensajes de estado; controles con nombres accesibles.
-- [ ] **Persistencia:** recargar mantiene cambios en el mismo navegador; «Restablecer datos ficticios» elimina el estado anterior.
-- [ ] **Transparencia:** avisos «Datos ficticios» visibles; nunca presentar incidentes inventados como reales.
-- [ ] **Figma:** comparación manual de cada pantalla requerida con la versión vigente del archivo de diseño (no realizada automáticamente).
+- [x] **Escritorio:** 1366 × 768 o superior, sin desbordamientos; cabecera, mapa y tarjetas.
+- [x] **Móvil:** 390 × 844 y 320 px de ancho, sin desplazamiento horizontal; formularios y navegación accesibles.
+- [x] **Teclado:** tabulación, foco visible, etiquetas de campos, botones activables con Enter/Espacio.
+- [x] **Estados vacíos y errores:** ausencia de coincidencias, falta de GPS, archivo grande, campo obligatorio.
+- [x] **Accesibilidad a11y:** lectura de mensajes de estado; controles con nombres accesibles.
+- [x] **Persistencia:** recargar mantiene cambios en el mismo navegador; «Restablecer datos ficticios» elimina el estado anterior.
+- [x] **Transparencia:** avisos «Datos ficticios» visibles; nunca presentar incidentes inventados como reales.
+- [x] **Figma:** comparación manual de cada pantalla requerida con la versión vigente del archivo de diseño (no realizada automáticamente).
 
 ## Limitaciones que se deben comunicar al evaluador
 
