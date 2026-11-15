@@ -31,7 +31,8 @@ function statement(s,...args){return db.prepare(s).all(...args)}
 const clients=new Set();
 function publish(type,data={}){const item=`event: ${type}\ndata: ${JSON.stringify(data)}\n\n`;for(const client of clients){try{client.write(item)}catch{clients.delete(client)}}}
 const count='(SELECT COUNT(*) FROM confirmations c WHERE c.report_id=r.id) AS confirmations';
-function getReport(id){return db.prepare(`SELECT r.*,u.name AS author,${count} FROM reports r JOIN users u ON u.id=r.owner_id WHERE r.id=?`).get(id)}
+const reportFields='r.id,r.owner_id,r.category,r.description,r.risk,r.district,r.lat,r.lon,r.created_at,r.updated_at,r.verification,r.assignee,r.attention,r.withdrawn';
+function getReport(id){return db.prepare(`SELECT ${reportFields},u.name AS author,${count} FROM reports r JOIN users u ON u.id=r.owner_id WHERE r.id=?`).get(id)}
 function audit(report,user,action,details=''){db.prepare('INSERT INTO history VALUES(?,?,?,?,?,?)').run(uid(),report,user.id,action,details,now())}
 function alert(userId,message){db.prepare('INSERT INTO alerts VALUES(?,?,?,?,0)').run(uid(),userId,message,now())}
 function requireUser(req){const token=(req.headers.cookie||'').split(';').map(s=>s.trim()).find(s=>s.startsWith('sc_session='))?.slice(11);if(!token)err(401,'Inicia sesión primero');const u=db.prepare(`SELECT u.id,u.name,u.email,u.role FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND s.expires>?`).get(hash(token),now());if(!u)err(401,'La sesión expiró');return u}
@@ -45,7 +46,10 @@ function validateReport(b){
  if(!['bajo','medio','alto'].includes(risk))err(400,'Nivel de riesgo inválido');
  if(!Number.isFinite(lat)||!Number.isFinite(lon)||lat < -90||lat>90||lon < -180||lon>180)err(400,'Coordenadas inválidas');
  let photo=null;
- if(b.photo){const str=String(b.photo);if(!/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(str))err(400,'Adjunta PNG, JPEG o WebP');const bytes=Buffer.from(str.split(',')[1],'base64');if(bytes.length>200*1024)err(400,'La imagen excede 200 KB');photo=str}
+ if(b.photo){const str=String(b.photo);if(!/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(str))err(400,'Adjunta PNG, JPEG o WebP');const bytes=Buffer.from(str.split(',')[1],'base64');if(bytes.length>200*1024)err(400,'La imagen excede 200 KB');
+    const ext=str.match(/^data:image\/(png|jpeg|webp)/)[1];
+    const sig=ext==='png'?bytes.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])):ext==='jpeg'?bytes.subarray(0,3).equals(Buffer.from([255,216,255])):bytes.subarray(0,4).toString()==='RIFF'&&bytes.subarray(8,12).toString()==='WEBP';
+    if(!sig)err(400,'El contenido de la imagen no corresponde al tipo declarado');photo=str}
  return {category,description,district,risk,lat,lon,photo};
 }
 function readBody(req){return new Promise((resolve,reject)=>{let chunks=[],length=0;req.on('data',c=>{length+=c.length;if(length>400000){reject(Object.assign(new Error('Solicitud demasiado grande'),{status:413}));req.destroy();return;}chunks.push(c)});req.on('end',()=>{try{resolve(JSON.parse(Buffer.concat(chunks).toString()||'{}'))}catch{reject(Object.assign(new Error('JSON inválido'),{status:400}))}});req.on('error',reject)})}
@@ -57,7 +61,7 @@ function serve(req,res,pathname){let file=pathname==='/'?'/index.html':pathname;
  if(file.startsWith('/.datos')||file.startsWith('/tests')||['/server.js','/package.json'].includes(file))return json(res,403,{error:'Ruta prohibida'});
  let st;try{st=fs.statSync(target)}catch{return json(res,404,{error:'Archivo inexistente'})}if(!st.isFile())return json(res,404,{error:'Archivo inexistente'});
  const ext=path.extname(target).toLowerCase();const mime={'.html':'text/html','.css':'text/css','.js':'text/javascript','.png':'image/png','.jpg':'image/jpeg','.svg':'image/svg+xml','.ico':'image/x-icon','.json':'application/json','.webp':'image/webp'}[ext];if(!mime)return json(res,403,{error:'Tipo no permitido'});
- res.writeHead(200,{'Content-Type':mime+'; charset=utf-8','X-Content-Type-Options':'nosniff','Referrer-Policy':'strict-origin-when-cross-origin','Content-Security-Policy':"default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; img-src 'self' data: blob: https://*.tile.openstreetmap.org; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://nominatim.openstreetmap.org; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"});fs.createReadStream(target).pipe(res)
+ res.writeHead(200,{'Content-Type':mime+'; charset=utf-8','X-Content-Type-Options':'nosniff','Referrer-Policy':'strict-origin-when-cross-origin','Content-Security-Policy':"default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://nominatim.openstreetmap.org; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"});fs.createReadStream(target).pipe(res)
 }
 async function api(req,res,p){const method=req.method;validateOrigin(req);
  if(p==='/api/health'&&method==='GET')return json(res,200,{ok:true,mode:'servidor SQLite',online_clients:clients.size});
@@ -77,7 +81,7 @@ async function api(req,res,p){const method=req.method;validateOrigin(req);
  if(p==='/api/me'&&method==='GET')return json(res,200,{user,preferences:pref(user)});
  if(p==='/api/events'&&method==='GET'){
   res.writeHead(200,{'Content-Type':'text/event-stream','Cache-Control':'no-cache, no-transform','Connection':'keep-alive','X-Accel-Buffering':'no'});res.write('retry: 2500\nevent: connected\ndata: {}\n\n');clients.add(res);
-  const h=setInterval(()=>{try{res.write(': ping\n\n')}catch{clearInterval(h);clients.delete(res)}},20000);req.on('close',()=>{clearInterval(h);clients.delete(res)});return;
+  const h=setInterval(()=>{try{res.write(': ping\n\n')}catch{clearInterval(h);clients.delete(res)}},20000);res.on('close',()=>{clearInterval(h);clients.delete(res)});return;
  }
  if(p==='/api/preferences'&&method==='GET')return json(res,200,pref(user));
  if(p==='/api/preferences'&&method==='PATCH'){
@@ -96,13 +100,15 @@ async function api(req,res,p){const method=req.method;validateOrigin(req);
  }
  if(p.startsWith('/api/reports/')){
   const parts=p.split('/'),id=decodeURIComponent(parts[3]||'');const r=getReport(id);if(!r)err(404,'Reporte inexistente');
+  if(r.withdrawn&&r.owner_id!==user.id&&user.role!=='seguridad')err(404,'Reporte no disponible');
+  if(r.verification==='descartado'&&r.owner_id!==user.id&&user.role!=='seguridad')err(404,'Reporte no disponible');
   if(parts[4]==='confirm'&&method==='POST'){
    if(r.withdrawn||r.verification==='descartado')err(409,'Reporte no confirmable');
    if(r.owner_id===user.id)err(403,'No puedes confirmar tu propio reporte');
    db.prepare('INSERT OR IGNORE INTO confirmations VALUES(?,?,?)').run(id,user.id,now());publish('reports',{action:'confirmation',id});return json(res,200,{report:getReport(id)});
   }
   if(parts[4]==='photo'&&method==='GET'){
-   if(!r.photo)return json(res,404,{error:'No existe evidencia'});return json(res,200,{photo:r.photo});
+   const evidence=db.prepare('SELECT photo FROM reports WHERE id=?').get(id)?.photo;if(!evidence)return json(res,404,{error:'No existe evidencia'});return json(res,200,{photo:evidence});
   }
   if(parts[4]==='history'&&method==='GET'){
    return json(res,200,{history:db.prepare('SELECT h.id,h.action,h.details,h.created_at,u.name AS actor FROM history h JOIN users u ON u.id=h.actor_id WHERE h.report_id=? ORDER BY h.created_at DESC').all(id)})
@@ -110,14 +116,14 @@ async function api(req,res,p){const method=req.method;validateOrigin(req);
   if(parts.length===4&&method==='GET')return json(res,200,{report:r});
   if(parts.length===4&&method==='PATCH'){
    if(r.owner_id!==user.id||r.verification!=='pendiente'||r.withdrawn)err(403,'Solo puedes editar reportes propios pendientes');
-   const b=validateReport(await readBody(req));db.prepare('UPDATE reports SET category=?,description=?,risk=?,district=?,lat=?,lon=?,photo=?,updated_at=? WHERE id=?').run(b.category,b.description,b.risk,b.district,b.lat,b.lon,b.photo??r.photo,now(),id);audit(id,user,'editado','Edición de reporte propio');publish('reports',{action:'edited',id});return json(res,200,{report:getReport(id)})
+   const b=validateReport(await readBody(req));const existingPhoto=db.prepare('SELECT photo FROM reports WHERE id=?').get(id).photo;db.prepare('UPDATE reports SET category=?,description=?,risk=?,district=?,lat=?,lon=?,photo=?,updated_at=? WHERE id=?').run(b.category,b.description,b.risk,b.district,b.lat,b.lon,b.photo??existingPhoto,now(),id);audit(id,user,'editado','Edición de reporte propio');publish('reports',{action:'edited',id});return json(res,200,{report:getReport(id)})
   }
   if(parts[4]==='withdraw'&&method==='POST'){
    if(r.owner_id!==user.id||r.verification!=='pendiente'||r.withdrawn)err(403,'Solo puedes retirar reportes propios pendientes');
    db.prepare('UPDATE reports SET withdrawn=1,updated_at=? WHERE id=?').run(now(),id);audit(id,user,'retirado','Retirado por el autor');publish('reports',{action:'withdrawn',id});return json(res,200,{report:getReport(id)})
   }
   if(parts[4]==='manage'&&method==='POST'){
-   security(user);const b=await readBody(req),verification=clean(b.verification??r.verification),attention=clean(b.attention??r.attention,30),assignee=clean(b.assignee??r.assignee,80);
+   security(user);if(r.withdrawn)err(409,'El reporte fue retirado y no puede modificarse');const b=await readBody(req),verification=clean(b.verification??r.verification),attention=clean(b.attention??r.attention,30),assignee=clean(b.assignee??r.assignee,80);
    if(!['pendiente','confirmado','descartado'].includes(verification)||!['Pendiente','En atención','Atendido'].includes(attention))err(400,'Estado no permitido');
    db.prepare('UPDATE reports SET verification=?,attention=?,assignee=?,updated_at=? WHERE id=?').run(verification,attention,assignee,now(),id);
    audit(id,user,'gestión',`Verificación: ${r.verification} -> ${verification}; responsable: ${assignee||'Sin asignar'}; atención: ${attention}`);
@@ -130,7 +136,9 @@ async function api(req,res,p){const method=req.method;validateOrigin(req);
  if(p==='/api/notices'&&method==='GET')return json(res,200,{notices:statement('SELECT n.id,n.district,n.message,n.created_at,u.name AS author FROM notices n JOIN users u ON u.id=n.author_id ORDER BY n.created_at DESC LIMIT 100')});
  if(p==='/api/notices'&&method==='POST'){
   security(user);const b=await readBody(req),district=clean(b.district,120),message=clean(b.message,500);if(!district||message.length<8)err(400,'Indica zona y comunicado (8+ caracteres)');const id=uid();db.prepare('INSERT INTO notices VALUES(?,?,?,?,?)').run(id,user.id,district,message,now());
-  const users=statement("SELECT id FROM users WHERE role='estudiante'");for(const u of users)alert(u.id,`Comunicado para ${district}: ${message}`);publish('notices',{id,district});publish('alerts',{});return json(res,201,{ok:true,id,recipients:users.length})
+  const users=statement("SELECT u.id,p.routes FROM users u JOIN preferences p ON p.user_id=u.id WHERE u.role='estudiante'");
+  const target=users.filter(u=>u.routes.split(',').map(x=>x.trim().toLowerCase()).some(x=>x&&district.toLowerCase().includes(x)||x&&x.includes(district.toLowerCase())));
+  for(const u of target)alert(u.id,`Comunicado para ${district}: ${message}`);publish('notices',{id,district});publish('alerts',{});return json(res,201,{ok:true,id,recipients:target.length})
  }
  if(p==='/api/alerts'&&method==='GET')return json(res,200,{alerts:db.prepare('SELECT * FROM alerts WHERE user_id=? ORDER BY created_at DESC LIMIT 100').all(user.id)});
  if(p==='/api/alerts/read'&&method==='POST'){db.prepare('UPDATE alerts SET read=1 WHERE user_id=?').run(user.id);return json(res,200,{ok:true})}
