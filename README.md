@@ -45,7 +45,7 @@ Se proponen interacciones de las 30 HU core indicadas en el informe de Aegis Lab
 
 ## Validación
 
-Se revisó la sintaxis de los dos archivos JavaScript principales y se ejecutaron 12 pruebas programáticas de la lógica de datos: creación, edición, evidencia, confirmación, estados, avisos, gestión, permisos simulados, retiro, validaciones y restablecimiento. **Esto no equivale a haber completado una prueba E2E visual en Brave ni a validar pixel por pixel contra Figma**. Las verificaciones manuales del archivo `PRUEBAS-TB2.md` deben marcarse con evidencia antes de sustentar.
+Se revisó la sintaxis de los dos archivos JavaScript principales y se ejecutaron 12 pruebas programáticas de la lógica de datos: creación, edición, evidencia, confirmación, estados, avisos, gestión, permisos simulados, retiro, validaciones y restablecimiento. Además, la revisión automatizada de GitHub Actions ejecutó **pruebas de navegación en Chromium** a 1280 × 800 y 390 × 844 px: inicio, filtros, creación de reporte, gestión por seguridad, aviso al estudiante y comprobación de ausencia de scroll horizontal. Estas pruebas **no equivalen a validar las 30 HU manualmente ni a comparar pixel por pixel con Figma**. Las verificaciones manuales del archivo `PRUEBAS-TB2.md` deben marcarse con evidencia antes de sustentar.
 
 ## Git y actualización local
 
@@ -61,3 +61,5 @@ Abre `index.html` con Live Server. No se requiere `npm install`.
 ## Entrega
 
 Este repositorio contiene únicamente un prototipo web de aprendizaje; **no** una aplicación real de reporte o vigilancia. Para la sustentación, diferenciar claramente la visualización interactiva, los efectos simulados de cada HU y las limitaciones sin backend.
+
+Pruebas en GitHub: [acciones del repositorio](https://github.com/Tarkito-do/safecampus-landing-page/actions). La automatización usa Node.js y Playwright **solo dentro del runner de GitHub para pruebas**, no como requisitos para ejecutar SafeCampus.
