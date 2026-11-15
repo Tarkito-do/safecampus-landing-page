@@ -1,0 +1,187 @@
+/*
+  SafeCampus | Aegis Labs
+  Módulo demostrativo de las 30 historias de usuario.
+  Diseño inspirado en los mock-ups Android/iOS y la identidad visual del informe.
+  Las reglas se organizan por secciones, como en la práctica de semana 11.
+*/
+
+/* PASO 1. Variables visuales y estilos base. */
+:root {
+  --azul-oscuro: #173b55;
+  --azul-acero: #3e7091;
+  --azul-claro: #9cc8d9;
+  --texto-secundario: #526779;
+  --borde: #dce7ec;
+  --fondo-suave: #f6f9fb;
+  --fondo-etiqueta: #e9f2f6;
+  --riesgo-bajo: #d6a5a5;
+  --riesgo-medio: #b36b6b;
+  --riesgo-alto: #874b4b;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: #f6f9fb;
+  color: var(--azul-oscuro);
+  font-family: "Manrope", Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+}
+button, select, input, textarea { font: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: .5; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 3px solid var(--azul-claro);
+  outline-offset: 2px;
+}
+h1, h2, h3 { line-height: 1.25; }
+h1 { margin: 0 0 1rem; font-size: clamp(1.8rem, 4vw, 2.5rem); }
+h2 { margin: 1.6rem 0 .9rem; font-size: 1.25rem; }
+h3 { margin: 0; font-size: 1.02rem; }
+p { margin: .5rem 0 1rem; }
+.contenedor-app { width: min(94%, 1040px); margin: 0 auto; }
+.texto-tenue, .nota { font-size: .9rem; color: var(--texto-secundario); }
+.sobre-titulo { color: var(--azul-acero); font-size: .73rem; font-weight: 800; letter-spacing: .08em; }
+.aviso-demo {
+  margin: 1.5rem 0 0;
+  padding: .9rem 1.2rem;
+  border: 1px solid #f0d6b6;
+  border-radius: 10px;
+  background: #fff9ec;
+  color: #72531a;
+}
+.mensaje-global { min-height: 1.4rem; margin-top: .75rem; color: #1f6b4f; font-weight: 600; }
+
+/* PASO 2. Cabecera y navegación. */
+.app-cabecera { background: #fff; border-bottom: 1px solid var(--borde); }
+.cabecera-interior { display: flex; justify-content: space-between; align-items: center; gap: 1rem; min-height: 76px; }
+.marca-app { display: flex; align-items: center; gap: .7rem; color: var(--azul-oscuro); font-size: 1.35rem; text-decoration: none; }
+.marca-app img { width: 47px; height: 42px; object-fit: contain; }
+.rol-control { display: flex; align-items: center; gap: .65rem; }
+.rol-control label { font-size: .79rem; font-weight: 700; }
+.rol-control select { max-width: 210px; }
+.navegacion-inferior {
+  position: sticky;
+  bottom: 0;
+  z-index: 900;
+  display: flex;
+  justify-content: space-around;
+  gap: .3rem;
+  padding: .65rem;
+  margin: 2rem 0 0;
+  background: #fff;
+  border: 1px solid var(--borde);
+  border-radius: 12px 12px 0 0;
+  box-shadow: 0 -5px 20px #173b5510;
+}
+.navegacion-inferior button {
+  flex: 1; border: 0; border-radius: 9px; padding: .7rem .25rem;
+  background: transparent; color: var(--texto-secundario); font-size: .85rem;
+}
+.navegacion-inferior button.activo { background: var(--fondo-etiqueta); color: var(--azul-acero); font-weight: 800; }
+.navegacion-inferior button:hover { background: var(--fondo-suave); }
+
+/* PASO 3. Contenedores, formularios y botones. */
+.pantalla { padding: 1.4rem 0 2rem; min-height: 50vh; }
+.encabezado-vista { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.boton, .boton-secundario {
+  display: inline-block; padding: .7rem 1.15rem; border-radius: 9px;
+  border: 1px solid var(--azul-acero); font-weight: 700;
+}
+.boton { color: #fff; background: var(--azul-acero); }
+.boton:hover { background: #2c5a78; }
+.boton-secundario { color: var(--azul-acero); background: #fff; }
+.boton-secundario:hover { background: var(--fondo-etiqueta); }
+.boton-peligro { color: #8b3434; border-color: #d7bcbc; }
+.ancho { width: 100%; }
+.enlace-regreso { padding: .5rem 0; background: transparent; border: 0; color: var(--azul-acero); font-weight: 700; }
+.acciones-cortas { display: flex; gap: .55rem; align-items: center; flex-wrap: wrap; }
+form { display: grid; gap: 1.1rem; }
+form label, .filtros label { display: grid; gap: .4rem; color: var(--azul-oscuro); font-size: .85rem; font-weight: 700; }
+input:not([type="checkbox"]):not([type="file"]), textarea, select {
+  min-height: 44px; width: 100%; border: 1px solid var(--borde);
+  border-radius: 9px; background: #fff; color: var(--azul-oscuro);
+  padding: .65rem .8rem;
+}
+textarea { resize: vertical; }
+input[type="file"] { max-width: 100%; padding: .7rem 0; font-size: .85rem; }
+.fila-check { display: flex; align-items: center; gap: .7rem; }
+.fila-check input { width: 18px; height: 18px; }
+.dos-columnas { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+#form-reporte, #form-perfil, #form-seguridad, #form-comunicado {
+  max-width: 760px; padding: 1.25rem; background: #fff;
+  border: 1px solid var(--borde); border-radius: 14px;
+}
+
+/* PASO 4. Mapa, filtros y reportes. */
+.filtros {
+  display: grid; grid-template-columns: 1fr 1fr 1.25fr auto;
+  gap: .8rem; align-items: end;
+  margin: 1rem 0; padding: 1rem; background: #fff;
+  border: 1px solid var(--borde); border-radius: 13px;
+}
+.filtros .acciones-cortas { align-self: end; }
+.mapa-marco { padding: .6rem; border: 1px solid var(--borde); border-radius: 15px; background: #fff; }
+#mapa-app { height: 370px; width: 100%; background: #e9f2f6; border-radius: 10px; }
+.mapa-acciones { display: flex; align-items: center; flex-wrap: wrap; gap: .65rem; margin: .7rem 0; }
+.lista { display: grid; gap: .85rem; }
+.tarjeta-reporte, .tarjeta-detalle {
+  padding: 1rem 1.2rem; border: 1px solid var(--borde);
+  border-radius: 13px; background: #fff;
+  box-shadow: 0 4px 12px #173b5508;
+}
+.tarjeta-reporte header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .6rem; }
+.tarjeta-reporte p { font-size: .9rem; }
+.tarjeta-reporte .acciones-cortas { margin-top: .7rem; }
+.tarjeta-detalle { max-width: 760px; margin: 1.2rem 0; }
+.etiqueta-estado {
+  display: inline-block; padding: .3rem .65rem; border-radius: 999px;
+  background: #eaf2f6; font-size: .82rem; font-weight: 800;
+}
+.estado-confirmado { color: #1f654e; background: #e5f4ec; }
+.estado-descartado { color: #873434; background: #fbeaea; }
+.estado-pendiente { color: #805d17; background: #fff3d9; }
+.nivel { font-weight: 700; }
+.nivel-bajo { color: var(--riesgo-bajo); }
+.nivel-medio { color: var(--riesgo-medio); }
+.nivel-alto { color: var(--riesgo-alto); }
+.vacio { padding: 1.2rem; background: #fff; color: var(--texto-secundario); border: 1px dashed var(--borde); border-radius: 10px; }
+.evidencia { max-width: 230px; max-height: 190px; object-fit: contain; border: 1px solid var(--borde); border-radius: 8px; }
+.icono-incidente {
+  display: block; width: 20px; height: 20px;
+  border: 3px solid #fff; border-radius: 50%;
+  box-shadow: 0 2px 7px #173b555c;
+}
+.icono-incidente.bajo { background: var(--riesgo-bajo); }
+.icono-incidente.medio { background: var(--riesgo-medio); }
+.icono-incidente.alto { background: var(--riesgo-alto); }
+.mapa-leyenda { background: #fff; border: 1px solid var(--borde); border-radius: 9px; padding: .4rem .65rem; font-size: .75rem; }
+.mapa-leyenda div { display: flex; align-items: center; gap: .45rem; }
+.mapa-leyenda i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
+.calor-bajo { background: #d6a5a5; }
+.calor-medio { background: #b36b6b; }
+.calor-alto { background: #874b4b; }
+#vista-foto { min-height: .2rem; }
+#revisar-reporte { background: #eef6fa; }
+
+/* PASO 5. Ajustes para tabletas y celulares. */
+@media (max-width: 900px) {
+  .filtros { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 600px) {
+  body { font-size: 14px; }
+  .cabecera-interior { flex-wrap: wrap; padding: .7rem 0; }
+  .marca-app { font-size: 1.14rem; }
+  .rol-control { width: 100%; justify-content: space-between; }
+  .rol-control label { max-width: 45%; }
+  .filtros { grid-template-columns: 1fr; }
+  #mapa-app { height: 300px; }
+  .dos-columnas { grid-template-columns: 1fr; }
+  .pantalla { padding-top: 1rem; }
+  .navegacion-inferior { margin-left: -3.2%; margin-right: -3.2%; gap: 0; padding: .4rem; }
+  .navegacion-inferior button { font-size: .7rem; padding: .6rem .2rem; }
+  .encabezado-vista .boton { width: 100%; }
+  .acciones-cortas button { flex-grow: 1; }
+}
