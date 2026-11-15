@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="SafeCampus: información preventiva, reportes comunitarios y orientación para desplazarte de forma más informada alrededor del campus.">
+  <meta name="theme-color" content="#173b55">
+  <title>SafeCampus | Aegis Labs</title>
+  <link rel="icon" type="image/png" href="imágenes/favicon-safecampus.png">
+  <!-- Manrope: tipografía definida en la guía de identidad SafeCampus. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Leaflet 1.9.4, biblioteca de mapas interactivos gratuita. -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous" defer></script>
+  <link rel="stylesheet" href="css/estilos.css">
+  <script src="js/menu.js" defer></script>
+  <script src="js/mapa.js" defer></script>
+</head>
+<body>
+  <!-- PASO 1. Cabecera principal y menú de navegación. -->
+  <header class="cabecera" id="inicio" tabindex="-1">
+    <div class="contenedor barra">
+      <a class="marca" href="#inicio" aria-label="SafeCampus, ir al inicio">
+        <img src="imágenes/escudo-safecampus.png" width="67" height="54" alt="" class="marca-logo">
+        <span class="marca-nombre">SafeCampus</span>
+      </a>
+
+      <!-- En celular, el botón muestra y oculta la navegación. -->
+      <button class="boton-menu" id="boton-menu" type="button"
+              aria-controls="navegacion" aria-expanded="false" aria-label="Abrir menú">
+        <span class="lineas-menu" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span class="solo-lectores" id="texto-menu">Menú</span>
+      </button>
+
+      <nav class="navegacion" id="navegacion" aria-label="Navegación principal">
+        <ul class="menu">
+          <li><a href="#inicio">Inicio</a></li>
+          <li><a href="#beneficios">Beneficios</a></li>
+          <li><a href="#como-funciona">Cómo funciona</a></li>
+        </ul>
+        <a class="boton boton-cabecera" href="#beneficios">Conocer SafeCampus</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="contenido">
+    <!-- PASO 2. Presentación principal del Landing Page. -->
+    <section class="hero contenedor" aria-labelledby="titulo-principal">
+      <div class="hero-texto">
+        <p class="etiqueta">PREVENCIÓN UNIVERSITARIA</p>
+        <h1 id="titulo-principal">Muévete informado.<br>Anticipa tus rutas.</h1>
+        <p class="hero-descripcion descripcion-escritorio">
+          Conoce SafeCampus: información geolocalizada, reportes comunitarios
+          y prevención para tomar decisiones antes de desplazarte por los alrededores del campus.
+        </p>
+        <p class="hero-descripcion descripcion-movil">
+          Información geolocalizada y reportes comunitarios para tomar decisiones
+          antes de desplazarte por los alrededores del campus.
+        </p>
+        <div class="acciones">
+          <a class="boton" href="#como-funciona">Conocer cómo funciona</a>
+          <a class="enlace" href="#beneficios">Explorar beneficios</a>
+        </div>
+      </div>
+
+      <!-- PASO 3. Vista preventiva: base real con OpenStreetMap y fallback ilustrativo. -->
+      <div class="vista-preventiva" aria-label="Vista preventiva ilustrativa de SafeCampus">
+        <p class="titulo-vista titulo-escritorio">Vista preventiva de SafeCampus</p>
+        <p class="titulo-vista titulo-movil">Así se presenta la información</p>
+        <div class="mapa-ilustrativo" aria-label="Representación gráfica de zonas y marcadores de riesgo de demostración">
+          <div class="mapa-bloques" aria-hidden="true">
+            <span class="bloque bloque-verde"></span>
+            <span class="bloque bloque-azul"></span>
+            <span class="bloque bloque-verde"></span>
+            <span class="bloque bloque-azul"></span>
+            <span class="bloque bloque-verde"></span>
+            <span class="bloque bloque-azul"></span>
+            <span class="bloque bloque-verde"></span>
+            <span class="bloque bloque-azul"></span>
+            <span class="bloque bloque-verde"></span>
+            <span class="bloque bloque-verde"></span>
+          </div>
+          <button class="marcador marcador-alto" type="button" data-nivel="alto"
+                  aria-label="Marcador de demostración: riesgo alto" title="Riesgo alto (demostración)"></button>
+          <button class="marcador marcador-medio" type="button" data-nivel="medio"
+                  aria-label="Marcador de demostración: riesgo medio" title="Riesgo medio (demostración)"></button>
+          <button class="marcador marcador-bajo" type="button" data-nivel="bajo"
+                  aria-label="Marcador de demostración: riesgo bajo" title="Riesgo bajo (demostración)"></button>
+          <span class="ubicacion-actual" role="img" aria-label="Ubicación ilustrativa"></span>
+          <!-- Se superpone sobre el dibujo al cargar las calles reales. -->
+          <div id="mapa-real" class="mapa-real" role="region"
+               aria-label="Mapa interactivo de Lima, Perú. Puedes moverlo, hacer zoom y seleccionar un punto." hidden></div>
+        </div>
+        <div class="controles-mapa">
+          <button id="mapa-lima" class="boton-mapa" type="button" disabled>Ver Lima</button>
+          <button id="mapa-ubicacion" class="boton-mapa" type="button" disabled>Mi ubicación</button>
+        </div>
+        <p class="nota-mapa" id="estado-mapa" role="status">
+          Mapa de referencia de Lima, Perú. Sin reportes de riesgo reales disponibles.
+        </p>
+        <ul class="niveles-riesgo" aria-label="Leyenda ilustrativa de niveles de riesgo">
+          <li class="riesgo-bajo">Bajo</li>
+          <li class="riesgo-medio">Medio</li>
+          <li class="riesgo-alto">Alto</li>
+        </ul>
+        <p id="mensaje-mapa" class="mensaje-mapa" role="status" hidden></p>
+      </div>
+
+      <!-- PASO 4. Pilares de SafeCampus en escritorio. -->
+      <div class="pilares">
+        <div class="pilar">
+          <span class="icono-pilar"><img src="imágenes/icono-ubicacion.svg" alt=""></span>
+          <div><h3>Ubicación</h3><p>Información geolocalizada</p></div>
+        </div>
+        <div class="pilar">
+          <span class="icono-pilar"><img src="imágenes/icono-prevencion.svg" alt=""></span>
+          <div><h3>Prevención</h3><p>Consulta antes de moverte</p></div>
+        </div>
+        <div class="pilar">
+          <span class="icono-pilar"><img src="imágenes/icono-comunidad.svg" alt=""></span>
+          <div><h3>Comunidad</h3><p>Reportes colaborativos</p></div>
+        </div>
+      </div>
+      <div class="pilar-movil">
+        <span class="icono-pilar"><img src="imágenes/icono-prevencion.svg" alt=""></span>
+        <div><h3>Información que acompaña</h3><p>Prevención · Comunidad · Confianza</p></div>
+      </div>
+    </section>
+
+    <!-- PASO 5. Beneficios de SafeCampus. -->
+    <section class="seccion contenedor" id="beneficios" aria-labelledby="titulo-beneficios" tabindex="-1">
+      <p class="etiqueta seccion-etiqueta">BENEFICIOS</p>
+      <h2 id="titulo-beneficios">Seguridad que empieza con información</h2>
+      <p class="descripcion-escritorio">Conoce las funciones de SafeCampus y cómo apoyan una comunidad universitaria más informada.</p>
+      <p class="descripcion-movil">Descubre cómo SafeCampus ayuda a mantener informada a la comunidad.</p>
+      <div class="tarjetas">
+        <article class="tarjeta">
+          <span class="icono-tarjeta"><img src="imágenes/icono-consulta.svg" alt=""></span>
+          <h3>Consulta preventiva</h3>
+          <p>Revisa zonas de riesgo y reportes recientes antes de elegir por dónde desplazarte.</p>
+        </article>
+        <article class="tarjeta">
+          <span class="icono-tarjeta"><img src="imágenes/icono-reportes.svg" alt=""></span>
+          <h3>Reportes comunitarios</h3>
+          <p>La comunidad contribuye con información sobre situaciones que requieren atención.</p>
+        </article>
+        <article class="tarjeta">
+          <span class="icono-tarjeta"><img src="imágenes/icono-verificacion.svg" alt=""></span>
+          <h3>Información confiable</h3>
+          <p class="descripcion-escritorio">Consulta el nivel de riesgo y distingue reportes pendientes o confirmados.</p>
+          <p class="descripcion-movil">Distingue niveles de riesgo y estados de verificación de los reportes.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- PASO 6. Tres pasos para utilizar SafeCampus. -->
+    <section class="seccion seccion-oscura" id="como-funciona" aria-labelledby="titulo-como-funciona" tabindex="-1">
+      <div class="contenedor">
+        <p class="etiqueta">CÓMO FUNCIONA</p>
+        <h2 id="titulo-como-funciona">Tres pasos para informarte mejor</h2>
+        <div class="pasos">
+          <article class="paso">
+            <span class="numero">01</span>
+            <div><h3>Explora</h3><p>Identifica zonas y categorías de riesgo.</p></div>
+          </article>
+          <article class="paso">
+            <span class="numero">02</span>
+            <div><h3>Consulta</h3><p>Revisa los detalles de reportes y su estado.</p></div>
+          </article>
+          <article class="paso">
+            <span class="numero">03</span>
+            <div><h3>Decide</h3><p class="descripcion-escritorio">Planifica tu desplazamiento con más información.</p><p class="descripcion-movil">Planifica tu desplazamiento con información preventiva.</p></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- PASO 7. Público objetivo de SafeCampus. -->
+    <section class="seccion contenedor" id="publico" aria-labelledby="titulo-publico" tabindex="-1">
+      <p class="etiqueta seccion-etiqueta descripcion-escritorio">PARA QUIÉN ES</p>
+      <p class="etiqueta seccion-etiqueta descripcion-movil">DIRIGIDO A</p>
+      <h2 id="titulo-publico">Una comunidad más conectada</h2>
+      <ul class="publicos">
+        <li><span class="icono-publico"><img src="imágenes/icono-estudiantes.svg" alt=""></span><span>Estudiantes universitarios</span></li>
+        <li><span class="icono-publico"><img src="imágenes/icono-personal.svg" alt=""></span><span>Personal académico y administrativo</span></li>
+        <li><span class="icono-publico"><img src="imágenes/icono-seguridad.svg" alt=""></span><span>Unidades de seguridad</span></li>
+      </ul>
+    </section>
+  </main>
+
+  <!-- PASO 8. Pie de página. -->
+  <footer class="pie">
+    <div class="contenedor pie-contenido">
+      <p><strong>SafeCampus · Aegis Labs</strong></p>
+      <p>Información preventiva; no garantiza ausencia de riesgos.</p>
+    </div>
+  </footer>
+</body>
+</html>
