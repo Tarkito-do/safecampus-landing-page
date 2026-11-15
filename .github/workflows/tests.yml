@@ -1,0 +1,24 @@
+name: SafeCampus — pruebas automatizadas
+on:
+  push:
+    branches: [develop, 'feature/**']
+  pull_request:
+    branches: [develop, main]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validar sintaxis JavaScript
+        run: |
+          node --check server.js
+          node --check js/plataforma.js
+          node --check js/mapa.js
+          node --check js/menu.js
+      - name: Ejecutar pruebas API, cliente y contratos de las 30 HU
+        run: npm test
