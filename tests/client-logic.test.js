@@ -5,6 +5,19 @@ const source=fs.readFileSync(path.join(__dirname,'../js/plataforma.js'),'utf8');
 function line(name){const all=source.split('\n'),s=all.find(x=>x.includes(name));assert.ok(s,'Función fuente '+name);return s.slice(s.indexOf(name))}
 function context(bindings={},lines=[]){const box=vm.createContext({...bindings});vm.runInContext(lines.join('\n'),box);return box}
 const distance=line('const kmBetween='),escape=line('const escapeHtml='),time=line('function timeAllowed()'),filtered=line('function filteredReports()'),proximity=line('function checkProximity('),renderRoutes=line('function renderRoutes()');
+test('HU11 HU15: formulario no convierte campos de GPS vacíos a cero',()=>{
+ const sourceFn=line('function reportFormData()');
+ const values={lat:'',lon:'-77.04'};
+ class FakeFormData { [Symbol.iterator](){return Object.entries(values)[Symbol.iterator]()} }
+ const ctx=context({$ : ()=>({}),FormData:FakeFormData,formPhoto:null},[sourceFn]);
+ let result=vm.runInContext('reportFormData()',ctx);
+ assert.ok(Number.isNaN(result.lat),'El campo latitud vacío debe conservarse como no válido');
+ assert.equal(result.lon,-77.04);
+ values.lat='0';values.lon='0';
+ result=vm.runInContext('reportFormData()',ctx);
+ assert.equal(result.lat,0,'La coordenada explícita 0 es válida');
+ assert.equal(result.lon,0);
+});
 test('HU22 y HU23: distancia geográfica consistente',()=>{const x=context({},[distance]);const self=vm.runInContext('kmBetween({lat:-12.05,lon:-77.04},{lat:-12.05,lon:-77.04})',x);assert.equal(self,0);const one=vm.runInContext('kmBetween({lat:0,lon:0},{lat:1,lon:0})',x);assert.ok(one>110000&&one<112000)});
 test('Renderizado seguro de texto aportado por usuarios',()=>{const x=context({},[escape]);assert.equal(vm.runInContext('escapeHtml(`<img src=x onerror=alert(1)>&`) ',x),'&lt;img src=x onerror=alert(1)&gt;&amp;')});
 test('HU10 y HU25: respeto de silencio temporal y horario',()=>{const prefs={hour_start:'00:00',hour_end:'23:59',mute_until:0};const x=context({prefs,Date},[time]);assert.equal(vm.runInContext('timeAllowed()',x),true);prefs.mute_until=Date.now()+60000;assert.equal(vm.runInContext('timeAllowed()',x),false);prefs.mute_until=0;assert.equal(vm.runInContext('timeAllowed()',x),true)});
