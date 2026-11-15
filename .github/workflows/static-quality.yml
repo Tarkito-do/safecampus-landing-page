@@ -1,0 +1,25 @@
+name: SafeCampus TB2 - pruebas de la web estatica
+on:
+  push:
+    branches: [develop, 'feature/**']
+  pull_request:
+    branches: [develop, main]
+permissions:
+  contents: read
+jobs:
+  static-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Entorno de pruebas (no forma parte de la pagina web)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Comprobar sintaxis JavaScript
+        run: |
+          node --check js/demo-api.js
+          node --check js/plataforma.js
+          node --check js/mapa.js
+          node --check js/menu.js
+      - name: Pruebas de los flujos simulados y contratos HTML/CSS
+        run: node --test tests/static.test.cjs
