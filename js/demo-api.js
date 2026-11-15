@@ -183,7 +183,7 @@
         if (report.owner_id!==user.id || report.withdrawn || report.verification!=='pendiente') {
           fail('Solo puedes editar reportes propios pendientes');
         }
-        Object.assign(report, reportBody(body));
+        const changes = reportBody(body); if (!changes.photo) delete changes.photo; Object.assign(report, changes);
         report.updated_at=now();
         history(report,'editado','El autor actualizó su reporte ficticio');
         save();
