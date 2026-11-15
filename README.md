@@ -2,6 +2,16 @@
 
 SafeCampus es una **demostración académica** para IHC y Tecnologías Móviles (UPC). La entrega web está construida con **HTML5, CSS3 y JavaScript del navegador**, sin framework, servidor de aplicación, Node.js, SQLite, instalación de dependencias ni cuentas reales.
 
+## Versión publicada
+
+- **Landing Page:** https://tarkito-do.github.io/safecampus-landing-page/
+- **Plataforma funcional:** https://tarkito-do.github.io/safecampus-landing-page/plataforma.html
+- **Repositorio:** https://github.com/Tarkito-do/safecampus-landing-page
+
+SafeCampus está publicado mediante GitHub Pages desde la rama `develop`.
+
+La plataforma permite demostrar las interacciones correspondientes a las 30 historias de usuario priorizadas, utilizando datos ficticios y almacenamiento local del navegador.
+
 ## Cómo abrir
 
 1. Abre la carpeta completa del repositorio en Visual Studio Code.
