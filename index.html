@@ -17,6 +17,7 @@
   <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"
           integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous" defer></script>
   <link rel="stylesheet" href="css/estilos.css">
+  <script src="js/datos-compartidos.js" defer></script>
   <script src="js/menu.js" defer></script>
   <script src="js/mapa.js" defer></script>
 </head>
@@ -41,9 +42,9 @@
           <li><a href="#inicio">Inicio</a></li>
           <li><a href="#beneficios">Beneficios</a></li>
           <li><a href="#como-funciona">Cómo funciona</a></li>
-          <li><a href="plataforma.html">Probar funciones</a></li>
+          <li><a href="plataforma.html">Plataforma</a></li>
         </ul>
-        <a class="boton boton-cabecera" href="#beneficios">Conocer SafeCampus</a>
+        <a class="boton boton-cabecera" href="plataforma.html">Ingresar a SafeCampus</a>
       </nav>
     </div>
   </header>
@@ -63,15 +64,15 @@
           antes de desplazarte por los alrededores del campus.
         </p>
         <div class="acciones">
-          <a class="boton" href="#como-funciona">Conocer cómo funciona</a>
-          <a class="enlace" href="#beneficios">Explorar beneficios</a>
+          <a class="boton" href="plataforma.html">Ingresar a SafeCampus</a>
+          <a class="enlace" href="#como-funciona">Conocer cómo funciona</a>
         </div>
       </div>
 
       <!-- PASO 3. Vista preventiva: base real con OpenStreetMap y fallback ilustrativo. -->
-      <div class="vista-preventiva" aria-label="Vista preventiva ilustrativa de SafeCampus">
-        <p class="titulo-vista titulo-escritorio">Vista preventiva de SafeCampus</p>
-        <p class="titulo-vista titulo-movil">Así se presenta la información</p>
+      <div class="vista-preventiva" aria-label="Vista previa de SafeCampus. Los reportes mostrados son ficticios.">
+        <p class="titulo-vista titulo-escritorio">Vista previa de SafeCampus · datos ficticios</p>
+        <p class="titulo-vista titulo-movil">Así se presenta la información · simulación</p>
         <div class="mapa-ilustrativo" aria-label="Representación gráfica de zonas y marcadores de riesgo de demostración">
           <div class="mapa-bloques" aria-hidden="true">
             <span class="bloque bloque-verde"></span>
@@ -100,9 +101,8 @@
           <button id="mapa-lima" class="boton-mapa" type="button" disabled>Ver Lima</button>
           <button id="mapa-ubicacion" class="boton-mapa" type="button" disabled>Mi ubicación</button>
         </div>
-        <p class="nota-mapa" id="estado-mapa" role="status">
-          Mapa de referencia de Lima, Perú. Sin reportes de riesgo reales disponibles.
-        </p>
+        <p class="nota-mapa" id="estado-mapa" role="status">Vista previa ilustrativa. Los incidentes mostrados son ficticios; no representan riesgos reales.</p>
+        <a class="mapa-cta" href="plataforma.html#vista-mapa">Explorar el mapa y sus reportes <span aria-hidden="true">→</span></a>
         <ul class="niveles-riesgo" aria-label="Leyenda ilustrativa de niveles de riesgo">
           <li class="riesgo-bajo">Bajo</li>
           <li class="riesgo-medio">Medio</li>
@@ -155,8 +155,8 @@
           <p class="descripcion-escritorio">Consulta el nivel de riesgo y distingue reportes pendientes o confirmados.</p>
           <p class="descripcion-movil">Distingue niveles de riesgo y estados de verificación de los reportes.</p>
         </article>
-        <p class="cta-plataforma"><a class="boton" href="plataforma.html">Probar las funcionalidades de SafeCampus (demostración)</a></p>
       </div>
+      <div class="cta-plataforma"><p>¿Quieres conocer cómo funciona en la práctica?</p><a class="boton" href="plataforma.html">Explorar la plataforma SafeCampus</a></div>
     </section>
 
     <!-- PASO 6. Tres pasos para utilizar SafeCampus. -->
