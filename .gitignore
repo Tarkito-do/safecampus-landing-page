@@ -1,0 +1,15 @@
+# Datos sensibles y artefactos generados
+.datos/
+node_modules/
+.env
+.env.*
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.log
+__*snapshot.html
+__*transfer.html
+__transfer_*.html
+*-source.txt
+browser-movil-test.png
+.DS_Store
