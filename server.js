@@ -39,6 +39,8 @@ function requireUser(req){const token=(req.headers.cookie||'').split(';').map(s=
 function security(user){if(user.role!=='seguridad')err(403,'Acceso reservado al personal de seguridad autenticado')}
 function validateReport(b){
  const category=clean(b.category,50),description=clean(b.description,1500),district=clean(b.district,120),risk=clean(b.risk,20);
+ // Una coordenada ausente o vacía no puede interpretarse como 0 (Number('') === 0).
+ if(b.lat===undefined||b.lat===null||String(b.lat).trim()===''||b.lon===undefined||b.lon===null||String(b.lon).trim()==='')err(400,'Indica latitud y longitud válidas');
  const lat=Number(b.lat),lon=Number(b.lon);
  if(!['Robo','Acoso','Iluminación','Acceso','Otro'].includes(category))err(400,'Categoría inválida');
  if(description.length<12)err(400,'Describe el incidente en 12 caracteres como mínimo');
