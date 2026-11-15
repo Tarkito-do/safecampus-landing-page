@@ -9,6 +9,7 @@ const CLAVE_REPORTES = 'safecampus-demo-reportes-v1';
 const CLAVE_PERFIL = 'safecampus-demo-perfil-v1';
 const CLAVE_COMUNICADOS = 'safecampus-demo-comunicados-v1';
 const CLAVE_AVISOS = 'safecampus-demo-avisos-v1';
+const CLAVE_BITACORA = 'safecampus-demo-bitacora-v1';
 const CENTRO_LIMA = [-12.0464, -77.0428];
 const ahora = Date.now();
 
@@ -48,9 +49,11 @@ let reportes = leerLocal(CLAVE_REPORTES, reportesIniciales);
 let perfil = leerLocal(CLAVE_PERFIL, perfilInicial);
 let comunicados = leerLocal(CLAVE_COMUNICADOS, []);
 let avisos = leerLocal(CLAVE_AVISOS, []);
+let bitacora = leerLocal(CLAVE_BITACORA, []);
 if (!Array.isArray(reportes)) reportes = reportesIniciales;
 if (!Array.isArray(comunicados)) comunicados = [];
 if (!Array.isArray(avisos)) avisos = [];
+if (!Array.isArray(bitacora)) bitacora = [];
 
 // PASO 2. Utilidades seguras: mensajes, fechas y salida HTML.
 function elemento(id) { return document.getElementById(id); }
@@ -102,6 +105,18 @@ function notificar(texto) {
     try { new Notification('SafeCampus — demostración', { body: texto }); } catch (error) { /* aviso visible en pantalla */ }
   }
 }
+function registrarBitacora(reporte, accion) {
+  bitacora.unshift({ id: reporte.id, texto: accion, fecha: Date.now() });
+  bitacora = bitacora.slice(0, 150);
+  guardarLocal(CLAVE_BITACORA, bitacora);
+}
+function avisarRutasFrecuentes(reporte) {
+  if (!permiteAvisar() || reporte.estado === 'descartado' || reporte.propietario === perfil.usuario) return;
+  const rutas = perfil.rutas.split(',').map(function (x) { return x.trim().toLowerCase(); }).filter(Boolean);
+  if (rutas.some(function (ruta) { return reporte.lugar.toLowerCase().includes(ruta); })) {
+    notificar('SIMULACIÓN: nuevo reporte de prueba en una de tus rutas frecuentes (' + reporte.lugar + ').');
+  }
+}
 function cambiosEstadoPropio(reporte, antiguo) {
   if (reporte.propietario === perfil.usuario && antiguo !== reporte.estado) {
     notificar('Reporte ' + reporte.id + ': cambió de ' + antiguo + ' a ' + reporte.estado + '.');
@@ -148,6 +163,9 @@ let marcadorUbicacion = null;
 let modoSeleccion = false;
 let ubicacionActual = null;
 let filtroCalor = false;
+let seguimientoCercania = null;
+let ultimoAvisoCercania = '';
+let ultimoMomentoAviso = 0;
 if (typeof L !== 'undefined') {
   mapa = L.map('mapa-app', { scrollWheelZoom: false }).setView(CENTRO_LIMA, 12);
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -263,12 +281,40 @@ elemento('mi-ubicacion').addEventListener('click', function () {
     informar('Se mostró tu ubicación aproximada. La precisión depende del dispositivo.');
   });
 });
+elemento('vigilar-cercania').addEventListener('click', function () {
+  if (seguimientoCercania !== null) {
+    navigator.geolocation.clearWatch(seguimientoCercania);
+    seguimientoCercania = null;
+    this.setAttribute('aria-pressed', 'false');
+    this.textContent = 'Activar alertas por cercanía';
+    informar('Seguimiento de ubicación detenido.');
+    return;
+  }
+  if (!navigator.geolocation) { informar('El navegador no permite seguimiento de ubicación.'); return; }
+  seguimientoCercania = navigator.geolocation.watchPosition(function (pos) {
+    const lat = pos.coords.latitude, lon = pos.coords.longitude;
+    ubicacionActual = { lat: lat, lon: lon };
+    alertasCercanas(lat, lon);
+  }, function () {
+    informar('No se pudo consultar tu ubicación para avisos de cercanía.');
+    if (seguimientoCercania !== null) navigator.geolocation.clearWatch(seguimientoCercania);
+    seguimientoCercania = null;
+    elemento('vigilar-cercania').setAttribute('aria-pressed', 'false');
+    elemento('vigilar-cercania').textContent = 'Activar alertas por cercanía';
+  }, { enableHighAccuracy: false, maximumAge: 30000, timeout: 12000 });
+  this.setAttribute('aria-pressed', 'true');
+  this.textContent = 'Detener alertas por cercanía';
+  informar('Seguimiento activado solo mientras la página esté abierta. No se guardan coordenadas.');
+});
 function alertasCercanas(lat, lon) {
   if (!permiteAvisar()) { informar('Alertas en silencio o fuera del horario configurado.'); return; }
   const cerca = reportes.filter(function (r) {
     return r.estado !== 'descartado' && distMetros(lat, lon, Number(r.lat), Number(r.lon)) <= Number(perfil.radio);
   });
-  if (cerca.length) {
+  const firma = cerca.map(function (r) { return r.id; }).sort().join(',');
+  if (cerca.length && (firma !== ultimoAvisoCercania || Date.now() - ultimoMomentoAviso > 15 * 60000)) {
+    ultimoAvisoCercania = firma;
+    ultimoMomentoAviso = Date.now();
     notificar('SIMULACIÓN: hay ' + cerca.length + ' reporte(s) de prueba dentro del radio de ' + perfil.radio + ' metros.');
     informar('Aviso simulado de cercanía mostrado. No representa un riesgo verificado.');
   }
@@ -489,7 +535,10 @@ function mostrarPanelSeguridad() {
       '</h3><p>' + escapar(r.lugar) + ' · ' + nivelVisible(r.nivel) +
       '</p><button class="boton-secundario" type="button" data-accion="seleccionar-seguridad" data-id="' + escapar(r.id) + '">Revisar incidente</button></article>';
   }).join('') : '<p class="vacio">No hay reportes pendientes.</p>';
-  elemento('historial-seguridad').innerHTML = reportes.filter(function (r) { return r.estado !== 'pendiente'; }).map(function (r) {
+  elemento('historial-seguridad').innerHTML = bitacora.map(function (evento) {
+    return '<article class="tarjeta-reporte"><strong>' + escapar(evento.id) + '</strong><p>' +
+      escapar(evento.texto) + '</p><p class="texto-tenue">' + fechaCorta(evento.fecha) + '</p></article>';
+  }).join('') + reportes.filter(function (r) { return r.estado !== 'pendiente'; }).map(function (r) {
     return '<article class="tarjeta-reporte"><strong>' + escapar(r.id) + ' · ' + escapar(r.categoria) +
       '</strong><p>' + etiquetaEstado(r.estado) + ' · ' + escapar(r.gestion || 'Pendiente') +
       ' · ' + escapar(r.responsable || 'Sin asignar') + '</p></article>';
@@ -516,6 +565,7 @@ elemento('form-seguridad').addEventListener('submit', function (evento) {
   if (!r) return;
   r.responsable = elemento('seg-responsable').value;
   r.gestion = elemento('seg-gestion').value;
+  registrarBitacora(r, 'Responsable: ' + (r.responsable || 'Sin asignar') + '. Gestión: ' + r.gestion);
   persistirReportes();
   informar('Gestión interna simulada actualizada para ' + r.id + '.');
 });
@@ -525,6 +575,7 @@ function verificarComoSeguridad(nuevoEstado) {
   if (!r || r.estado !== 'pendiente') return;
   const anterior = r.estado;
   r.estado = nuevoEstado;
+  registrarBitacora(r, 'Verificación: ' + anterior + ' → ' + nuevoEstado);
   cambiosEstadoPropio(r, anterior);
   persistirReportes();
   informar('Estado de verificación simulado: ' + r.id + ' → ' + nuevoEstado + '.');
@@ -554,9 +605,15 @@ function refrescarTodo() {
 }
 window.addEventListener('storage', function (evento) {
   if (evento.key === CLAVE_REPORTES) {
+    const anteriores = new Set(reportes.map(function (r) { return r.id; }));
     reportes = leerLocal(CLAVE_REPORTES, reportesIniciales);
+    reportes.forEach(function (r) { if (!anteriores.has(r.id)) avisarRutasFrecuentes(r); });
     refrescarTodo();
     informar('Se actualizaron los reportes desde otra pestaña de este navegador.');
+  }
+  if (evento.key === CLAVE_BITACORA) {
+    bitacora = leerLocal(CLAVE_BITACORA, []);
+    mostrarPanelSeguridad();
   }
   if (evento.key === CLAVE_COMUNICADOS) {
     comunicados = leerLocal(CLAVE_COMUNICADOS, []);
