@@ -1130,5 +1130,38 @@ header[id] {
   max-width: 90%;
 }
 
-/* PASO FINAL. Acceso a las funcionalidades del prototipo académico. */
-.cta-plataforma { margin-top: 1.6rem; }
+/* PASO 25. Recorrido integrado entre presentación y aplicación. */
+.mapa-cta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: .6rem;
+  margin-top: .75rem;
+  padding: .65rem .8rem;
+  background: var(--fondo-etiqueta);
+  color: var(--azul-oscuro);
+  font-size: .82rem;
+  font-weight: 800;
+  text-decoration: none;
+  border-radius: 8px;
+}
+.mapa-cta:hover,
+.mapa-cta:focus-visible { background: #d9ebf2; }
+.cta-plataforma {
+  margin-top: 2rem;
+  padding: 1.6rem;
+  background: var(--fondo-suave);
+  border: 1px solid var(--borde);
+  border-radius: 14px;
+  text-align: center;
+}
+.cta-plataforma p {
+  color: var(--texto-secundario);
+  font-weight: 600;
+  margin: 0 0 1rem;
+}
+.cta-plataforma .boton { max-width: 100%; }
+@media (max-width: 780px) {
+  .cta-plataforma .boton { width: 100%; }
+  .mapa-cta { font-size: .78rem; }
+}
