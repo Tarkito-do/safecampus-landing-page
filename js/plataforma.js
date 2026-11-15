@@ -310,8 +310,8 @@ elemento('simular-cercania').addEventListener('click', function () {
   const prueba = reportesFiltrados()[0];
   if (!prueba) { informar('No hay reportes visibles para simular un aviso.'); return; }
   ultimoAvisoCercania = '';
+  informar('Simulando cercanía a un reporte ficticio (sin usar tu ubicación).');
   alertasCercanas(Number(prueba.lat), Number(prueba.lon));
-  informar('Prueba de cercanía con ubicación FICTICIA. No corresponde a la ubicación de tu dispositivo.');
 });
 function alertasCercanas(lat, lon) {
   if (!permiteAvisar()) { informar('Alertas en silencio o fuera del horario configurado.'); return; }
